@@ -256,7 +256,9 @@ ol {
 
 .info-area {
 	flex: 0 1 auto;
-	padding: 20px;
+	align-self: stretch;
+	padding: 60px 20px 20px;
+	background-color: #fff;
 }
 
 button.start-button {

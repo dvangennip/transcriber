@@ -103,7 +103,7 @@ var onSourceFileDrop = function (inEvent) {
 	var file = inEvent.dataTransfer.files[0];
 
 	// set audio source if file is suitable
-	if (allowedFileTypes.indexOf(file.type) !== -1) {
+	if (file && allowedFileTypes.indexOf(file.type) !== -1) {
 		sourceAudio.src = window.URL.createObjectURL(file);
 		sourceLabel.innerHTML = file.name;
 	} else {
@@ -126,6 +126,7 @@ var onSourceFileDrop = function (inEvent) {
 var onWritingKeyDown = function (inEvent) {
 	// check if audio control key combo
 	switch (inEvent.keyCode) {
+		case 96: // numpad 0
 		case 101: // numpad 5
 			audioToggle();
 			inEvent.preventDefault();
