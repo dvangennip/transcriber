@@ -1,0 +1,49 @@
+<!DOCTYPE html> 
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<title>Transcriber</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" media="all" href="style.css" type="text/css">
+	<script type="text/javascript" src="transcriber.js"></script>
+</head>
+
+<body>
+	<div id="help_button" class="help-button">
+		<a id="help_button_link" href="#info_area"><strong>X</strong> close</a>
+	</div>
+	<div id="drop_notification" class="drop-notification"></div>
+	<div class="flex-container">
+		<div id="info_area" class="info-area">
+			<h2>Transcriber helps you to transcribe audio into text.</h2>
+			<ol>
+				<li>Drag an audio file into this browser window.</li>
+				<li>Start typing in the text area below.</li>
+				<li>Use the keypad numbers to control playback without having to move your hands away from the keyboard.</li>
+			</ol>
+			<p>7: Rewind by 10 seconds</p>
+			<p>8: Insert timestamp at cursor position</p>
+			<p>9: Move ahead by 10 seconds</p>
+			<p>4: Rewind by 5 seconds</p>
+			<p>5: Play / Pause</p>
+			<p>6: Move ahead by 5 seconds</p>
+			<p>1: Decrease playback speed by 0.1x</p>
+			<p>2: Reset playback speed to 1x</p>
+			<p>3: Increase playback speed by 0.1x</p>
+			<div class="flex-container">
+				<button id="info_start_button" class="start-button">Get started!</button>
+			</div>
+		</div>
+		<div id="source_drop_field" class="drop-area">
+			<h3 id="source_label">No audio loaded. Drag an audio file over this area.</h3>
+			<audio id="source_audio" class="source-audio" controls autoplay="false"></audio>
+			<fieldset>
+				<label id="label_playback_speed" for="input_playback_speed">Speed (1.0x)</label>
+				<input id="input_playback_speed" name="input_playback_speed" type="range" value="1" min="0.5" max="2" step="0.1">
+			</fieldset>
+		</div>
+		<div class="writing-area">
+			<textarea id="transcript"></textarea>
+		</div>
+	</div>
+</body>
