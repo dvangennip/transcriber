@@ -48,19 +48,22 @@ var playbackRate = 1,
 	helpButtonText,
 	infoArea,
 	infoAreaOpen = true,
-	startButton;
+	startButton,
+	storageFeedback,
+	storageTimer;
 
 var init = function () {
 	playbackSpeedSlider = $('input_playback_speed');
 	playbackSpeedLabel = $('label_playback_speed');
 	sourceAudio = $('source_audio');
 	sourceLabel = $('source_label');
-	transcript = $('transcript');
+	transcriptTextarea = $('transcript');
 	dropNotification = $('drop_notification');
 	helpButton = $('help_button');
 	helpButtonText = $('help_button_link');
 	infoArea = $('info_area');
 	startButton = $('info_start_button');
+	storageFeedback = $('storage_feedback');
 
 	// set styles
 	dropNotification.style.display = 'none';
@@ -78,7 +81,8 @@ var init = function () {
 	addEvent(helpButton, 'click', onHelpClick);
 	addEvent(startButton, 'click', onStartClick);
 
-	// TODO read default values/last text/last file from localStorage?
+	// read last text from storage
+	retrieveText();
 };
 
 var onSpeedChange = function (inEvent) {
@@ -124,6 +128,9 @@ var onSourceFileDrop = function (inEvent) {
 };
 
 var onWritingKeyDown = function (inEvent) {
+	// variable is true is the key leads to text input
+	var insertTextKey = false;
+
 	// check if audio control key combo
 	switch (inEvent.keyCode) {
 		case 96: // numpad 0
@@ -149,6 +156,7 @@ var onWritingKeyDown = function (inEvent) {
 			break;
 		case 104: // numpad 8
 			insertTimestamp();
+			insertTextKey = true;
 			inEvent.preventDefault();
 			break;
 		case 97: // numpad 1
@@ -163,10 +171,16 @@ var onWritingKeyDown = function (inEvent) {
 			audioPlaybackRate(1);
 			inEvent.preventDefault();
 			break;
-		default:
+		default: // if no control key, just pass along (do nothing)
+			insertTextKey = true;
 			break;
 	}
-	// if no control key, just pass along (do nothing)
+
+	// attempt to save if no other action is taken for 5 seconds
+	if (insertTextKey) {
+		clearTimeout(storageTimer);
+		storageTimer = setTimeout(saveText, 5000);
+	}
 };
 
 var onAudioStateChange = function (inEvent) {
@@ -224,14 +238,14 @@ var insertTimestamp = function () {
 	stamp = '[' + hours + ':' + minutes + ':' + seconds + ']';
 	
 	// insert at cursor position in textarea
-	var selectionStart = transcript.selectionStart;
-	var selectionEnd = transcript.selectionStart;
-	var first = transcript.value.slice(0, selectionStart);
-	var second = transcript.value.slice(selectionStart);
-	transcript.value = first + stamp + second;
+	var selectionStart = transcriptTextarea.selectionStart;
+	var selectionEnd = transcriptTextarea.selectionStart;
+	var first = transcriptTextarea.value.slice(0, selectionStart);
+	var second = transcriptTextarea.value.slice(selectionStart);
+	transcriptTextarea.value = first + stamp + second;
 	// get the cursor back in position (after insertion of 10 characters)
-	transcript.selectionStart = selectionStart + 10;
-	transcript.selectionEnd = selectionEnd + 10;
+	transcriptTextarea.selectionStart = selectionStart + 10;
+	transcriptTextarea.selectionEnd = selectionEnd + 10;
 };
 
 var onHelpClick = function (inEvent) {
@@ -249,7 +263,49 @@ var onHelpClick = function (inEvent) {
 
 var onStartClick = function (inEvent) {
 	onHelpClick(inEvent);
-	transcript.focus();
+	transcriptTextarea.focus();
+};
+
+var saveText = function () {
+	if (localStorage) {
+		localStorage.setItem('transcript', transcriptTextarea.value);
+		var t = new Date(),
+			h = t.getHours(),
+			m = t.getMinutes();
+		 
+		if (h < 10)
+			h = '0' + h;
+		if (m < 10)
+			m = '0' + m;
+		storageFeedback.innerHTML = "autosave: last saved at " + h + ":" + m + ".";
+	}
+	else {
+		storageFeedback.innerHTML = "<strong>warning:</strong> your text was not saved";
+	}
+};
+
+var retrieveText = function () {
+	if (localStorage) {
+		var text = localStorage.getItem('transcript');
+		if (text && text.length > 0) {
+			transcriptTextarea.value = text;
+			storageFeedback.innerHTML = "text from previous session has been retrieved";
+		} else {
+			storageFeedback.innerHTML = "ready with new session";
+		}
+	} else {
+		storageFeedback.innerHTML = "<strong>warning:</strong> no text could be retrieved";
+	}
+};
+
+var clearStorage = function () {
+	if (localStorage) {
+		localStorage.clear();
+		transcriptTextarea.value = "";
+		storageFeedback.innerHTML = "all data has been cleared";
+	} else {
+		storageFeedback.innerHTML = "<strong>warning:</strong> data has not been cleared";
+	}
 };
 
 // --- Initialise --------------------------------------------------------------

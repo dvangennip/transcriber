@@ -50,7 +50,7 @@ a img {
 body {
 	background: #ddd;
 	color: #404040;
-	font-family: "Lucida Grande", verdana, helvetica, arial, sans-serif;
+	font-family: "Lucida Grande", "Segoe UI", verdana, helvetica, arial, sans-serif;
 	font-size: 100%;
 	line-height: 1.4;
 }
@@ -65,7 +65,7 @@ h1, h2 {
 }
 
 h2 {
-	font-size: 1.3em;
+	font-size: 1.5em;
 }
 
 h3 {
@@ -79,6 +79,11 @@ h4 {
 
 h5 {
 	color: #666;
+}
+
+h6 {
+	color: #777777;
+	margin: 0 0 10px;
 }
 
 a,
@@ -192,10 +197,14 @@ ol {
 	background-color: rgba(32, 32, 32, 0.1);
     font-size: 0.9em;
     padding: 4px 7px;
+    border: 1px solid #666;
+    border-top: none;
+    border-radius: 0 0 2px 2px;
+    min-width: 3em;
     position: absolute;
     right: 5px;
     text-align: center;
-    top: 5px;
+    top: 0;
     z-index: 2;
 }
 .help-button:hover {
@@ -211,10 +220,9 @@ ol {
 }
 
 .drop-area {
-	flex: 0 1 auto;
 	align-self: stretch;
 	min-height: auto;
-	box-shadow: 0 0 7px rgba(0, 0, 0, 0.6);
+	box-shadow: 0 0 7px rgba(0, 0, 0, 0.4);
 	background-color: #1f1f1f;
 	color: #ddd;
 	padding: 10px;
@@ -244,23 +252,25 @@ ol {
 
 .writing-area {
 	flex: 1 1 auto;
-	align-self: center;
-	min-height: auto;
-	margin: 20px 0 15px 0;
+	align-self: stretch;
+	padding: 20px 0 15px 0;
 }
 
 .writing-area textarea {
 	min-width: 35em;
-	/*min-height: 30em;*/
+	min-height: 25em;
 }
 
 .info-area {
-	flex: 0 1 auto;
 	align-self: stretch;
+    background-color: #FFFFFF;
+    display: flex;
+    justify-content: center;
+}
+.info-area > div {
 	padding: 60px 20px 20px;
-	background-color: #fff;
 }
 
 button.start-button {
-	margin: 2em 0;
+	margin: 4em 0 2em;
 }
