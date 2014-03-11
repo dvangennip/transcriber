@@ -35,81 +35,83 @@ var addEvent = function (el, type, fn) {
 
 // --- Main functions ----------------------------------------------------------
 
-var playbackRate = 1,
-	playbackSpeedSlider,
-	playbackSpeedLabel,
-	sourceAudio,
-	sourceLabel,
-	canPlay = false,
-	transcript,
-	dropNotification,
-	allowedFileTypes = ['audio/mpeg','audio/ogg','audio/wav'],
-	helpButton,
-	helpButtonText,
-	infoArea,
-	infoAreaOpen = true,
-	startButton,
-	storageFeedback,
-	storageTimer;
+var TS = {};
 
-var init = function () {
-	playbackSpeedSlider = $('input_playback_speed');
-	playbackSpeedLabel = $('label_playback_speed');
-	sourceAudio = $('source_audio');
-	sourceLabel = $('source_label');
-	transcriptTextarea = $('transcript');
-	dropNotification = $('drop_notification');
-	helpButton = $('help_button');
-	helpButtonText = $('help_button_link');
-	infoArea = $('info_area');
-	startButton = $('info_start_button');
-	storageFeedback = $('storage_feedback');
+TS.init = function () {
+	TS.playbackRate = 1;
+	TS.playbackSpeedSlider = $('input_playback_speed');
+	TS.playbackSpeedLabel = $('label_playback_speed');
+	TS.sourceAudio = $('source_audio');
+	TS.sourceLabel = $('source_label');
+	TS.canPlay = false;
+	TS.allowedFileTypes = ['audio/mpeg','audio/ogg','audio/webm','audio/wave','audio/wav','audio/x-wav'],
+	TS.storageTimerShort = null;
+	TS.storageTimerLong = null;
+	TS.textChangedSinceSave = false;
+	TS.transcriptTextarea = $('transcript');
+	TS.transcriptTextarea.hasFocus = false;
+	TS.dropNotification = $('drop_notification');
+	TS.helpButton = $('help_button');
+	TS.helpButtonText = $('help_button_link');
+	TS.infoArea = $('info_area');
+	TS.infoAreaOpen = true;
+	TS.startButton = $('info_start_button');
+	TS.storageFeedback = $('storage_feedback');
 
 	// set styles
-	dropNotification.style.display = 'none';
+	TS.dropNotification.style.display = 'none';
 
 	// set event listeners
-	addEvent(playbackSpeedSlider, 'input', onSpeedChange);
+	addEvent(TS.playbackSpeedSlider, 'input', TS.onSpeedChange);
 	
-	addEvent(window, 'dragover', onSourceFileDrag);
-    addEvent(window, 'dragenter', onSourceFileDrag);
-    addEvent(window, 'dragleave', onSourceFileDrag);
-	addEvent(window, 'drop', onSourceFileDrop);
+	addEvent(window, 'dragover',  TS.onSourceFileDrag);
+    addEvent(window, 'dragenter', TS.onSourceFileDrag);
+    addEvent(window, 'dragleave', TS.onSourceFileDrag);
+	addEvent(window, 'drop',      TS.onSourceFileDrop);
 
-	addEvent(window, 'keydown', onWritingKeyDown);
-	addEvent(sourceAudio, 'canplay', onAudioStateChange);
-	addEvent(helpButton, 'click', onHelpClick);
-	addEvent(startButton, 'click', onStartClick);
+	addEvent(window, 'keydown', TS.onWritingKeyDown);
+	addEvent(TS.transcriptTextarea, 'change', TS.onTextareaChange);
+	addEvent(TS.transcriptTextarea, 'copy',   TS.onTextareaChange);
+	addEvent(TS.transcriptTextarea, 'cut',    TS.onTextareaChange);
+	addEvent(TS.transcriptTextarea, 'paste',  TS.onTextareaChange);
+	addEvent(TS.transcriptTextarea, 'focus',  TS.onTextareaFocus);
+	addEvent(TS.transcriptTextarea, 'blur',   TS.onTextareaBlur);
+
+	addEvent(TS.sourceAudio, 'canplay', TS.onAudioStateChange);
+	addEvent(TS.helpButton, 'click', TS.onHelpClick);
+	addEvent(TS.startButton, 'click', TS.onStartClick);
+
+	addEvent(window, 'pagehide', TS.onPageHide);
 
 	// read last text from storage
-	retrieveText();
+	TS.retrieveText();
 };
 
-var onSpeedChange = function (inEvent) {
-	playbackRate = parseFloat(playbackSpeedSlider.value,10);
+TS.onSpeedChange = function (inEvent) {
+	TS.playbackRate = parseFloat(TS.playbackSpeedSlider.value,10);
 	// set label
-	playbackSpeedLabel.innerHTML = 'Speed (' + playbackRate + 'x)';
+	TS.playbackSpeedLabel.innerHTML = 'Speed (' + TS.playbackRate + 'x)';
 	// set playback speed
-	sourceAudio.playbackRate = playbackRate;
+	TS.sourceAudio.playbackRate = TS.playbackRate;
 };
 
-var onSourceFileDrag = function (inEvent) {
+TS.onSourceFileDrag = function (inEvent) {
 	// dragover, dragenter need to return false for a valid drop target element
 	if (inEvent.type === 'dragleave') {
-		dropNotification.style.display = 'none';
+		TS.dropNotification.style.display = 'none';
 	} else {
-		dropNotification.style.display = '';
+		TS.dropNotification.style.display = '';
 	}
 	inEvent.preventDefault();
 };
 
-var onSourceFileDrop = function (inEvent) {
+TS.onSourceFileDrop = function (inEvent) {
 	var file = inEvent.dataTransfer.files[0];
 
 	// set audio source if file is suitable
-	if (file && allowedFileTypes.indexOf(file.type) !== -1) {
-		sourceAudio.src = window.URL.createObjectURL(file);
-		sourceLabel.innerHTML = file.name;
+	if (file && TS.allowedFileTypes.indexOf(file.type) !== -1) {
+		TS.sourceAudio.src = window.URL.createObjectURL(file);
+		TS.sourceLabel.innerHTML = file.name;
 	} else {
 		var message = 'The file you dropped cannot be played. Try one of the following formats:\n\n';
 			message += allowedFileTypes.join('\n');
@@ -122,12 +124,12 @@ var onSourceFileDrop = function (inEvent) {
 	}
 
 	// reset looks
-	dropNotification.style.display = 'none';
+	TS.dropNotification.style.display = 'none';
 	// prevent setting page url to this file location
 	inEvent.preventDefault();
 };
 
-var onWritingKeyDown = function (inEvent) {
+TS.onWritingKeyDown = function (inEvent) {
 	// variable is true is the key leads to text input
 	var insertTextKey = false;
 
@@ -135,90 +137,118 @@ var onWritingKeyDown = function (inEvent) {
 	switch (inEvent.keyCode) {
 		case 96: // numpad 0
 		case 101: // numpad 5
-			audioToggle();
+			TS.audioToggle();
 			inEvent.preventDefault();
 			break;
 		case 100: // numpad 4
-			audioSeek(-5);
+			TS.audioSeek(-5);
 			inEvent.preventDefault();
 			break;
 		case 102: // numpad 6
-			audioSeek(5);
+			TS.audioSeek(5);
 			inEvent.preventDefault();
 			break;
 		case 103: // numpad 7
-			audioSeek(-10);
+			TS.audioSeek(-10);
 			inEvent.preventDefault();
 			break;
 		case 105: // numpad 9
-			audioSeek(10);
+			TS.audioSeek(10);
 			inEvent.preventDefault();
 			break;
 		case 104: // numpad 8
-			insertTimestamp();
+			TS.insertTimestamp();
 			insertTextKey = true;
 			inEvent.preventDefault();
 			break;
 		case 97: // numpad 1
-			audioPlaybackRate(-1);
+			TS.audioPlaybackRate(-1);
 			inEvent.preventDefault();
 			break;
 		case 98: // numpad 2
-			audioPlaybackRate(0);
+			TS.audioPlaybackRate(0);
 			inEvent.preventDefault();
 			break;
 		case 99: // numpad 3
-			audioPlaybackRate(1);
+			TS.audioPlaybackRate(1);
 			inEvent.preventDefault();
 			break;
 		default: // if no control key, just pass along (do nothing)
-			insertTextKey = true;
+			if (TS.transcriptTextarea.hasFocus)
+				insertTextKey = true;
 			break;
 	}
 
-	// attempt to save if no other action is taken for 5 seconds
-	if (insertTextKey) {
-		clearTimeout(storageTimer);
-		storageTimer = setTimeout(saveText, 5000);
-	}
+	if (insertTextKey)
+		TS.onTextareaChange();
 };
 
-var onAudioStateChange = function (inEvent) {
-	canPlay = true;
+/**
+ * onTextareaChange event handler
+ * 
+ * Triggers a save if no other action is taken for 5 seconds.
+ * To avoid continuously pushing back the save action, there is a long (3 min)
+ * timer which will trigger a save at least every few minutes.
+ */
+TS.onTextareaChange = function (inEvent) {
+	// set dirty flag
+	TS.textChangedSinceSave = true;
+	TS.storageFeedback.classList.add('timer-active');
+
+	// reset short period timer
+	clearTimeout(TS.storageTimerShort);
+	TS.storageTimerShort = setTimeout(TS.saveText, 5000);
+
+	// make sure long period timer is active
+	// do not reset to avoid pushing it back all the time
+	if (!TS.storageTimerLong)
+		TS.storageTimerLong = setTimeout(TS.saveText, 180000); // 5 minutes
 };
 
-var audioToggle = function () {
-	if (canPlay) {
-		if (sourceAudio.paused) {
-			sourceAudio.play();
-			sourceAudio.playbackRate = playbackRate;
+TS.onTextareaFocus = function (inEvent) {
+	TS.transcriptTextarea.hasFocus = true;
+};
+
+TS.onTextareaBlur = function (inEvent) {
+	TS.transcriptTextarea.hasFocus = false;
+};
+
+TS.onAudioStateChange = function (inEvent) {
+	TS.canPlay = true;
+};
+
+TS.audioToggle = function () {
+	if (TS.canPlay) {
+		if (TS.sourceAudio.paused) {
+			TS.sourceAudio.play();
+			TS.sourceAudio.playbackRate = TS.playbackRate;
 		} else {
-			sourceAudio.pause();
+			TS.sourceAudio.pause();
 		}
 	}
 };
 
-var audioSeek = function (inTime) {
-	if (canPlay)
-		sourceAudio.currentTime += inTime;
+TS.audioSeek = function (inTime) {
+	if (TS.canPlay)
+		TS.sourceAudio.currentTime += inTime;
 };
 
-var audioPlaybackRate = function (inAdjustment) {
+TS.audioPlaybackRate = function (inAdjustment) {
 	if (inAdjustment === 0) // reset to 1x
-		playbackRate = 1;
+		TS.playbackRate = 1;
 	else {
-		playbackRate += inAdjustment * 0.1; // add +/- 0.1x
+		TS.playbackRate += inAdjustment * 0.1; // add +/- 0.1x
 	}
-	playbackRate = (playbackRate > 2) ? 2 : ((playbackRate < 0.5) ? 0.5 : playbackRate);
+	TS.playbackRate = (TS.playbackRate > 2) ? 2 : ((TS.playbackRate < 0.5) ? 0.5 : TS.playbackRate);
 
 	// propagate this
-	playbackSpeedSlider.value = playbackRate;
-	onSpeedChange();
+	TS.playbackSpeedSlider.value = TS.playbackRate;
+	TS.onSpeedChange();
 };
 
-var insertTimestamp = function () {
+TS.insertTimestamp = function () {
 	// format sourceAudio.currentTime (gives time in seconds, e.g. 89.456)
-	var time = parseFloat(sourceAudio.currentTime, 10),
+	var time = parseFloat(TS.sourceAudio.currentTime, 10),
 		hours,
 		minutes,
 		seconds,
@@ -238,74 +268,97 @@ var insertTimestamp = function () {
 	stamp = '[' + hours + ':' + minutes + ':' + seconds + ']';
 	
 	// insert at cursor position in textarea
-	var selectionStart = transcriptTextarea.selectionStart;
-	var selectionEnd = transcriptTextarea.selectionStart;
-	var first = transcriptTextarea.value.slice(0, selectionStart);
-	var second = transcriptTextarea.value.slice(selectionStart);
-	transcriptTextarea.value = first + stamp + second;
+	var selectionStart = TS.transcriptTextarea.selectionStart;
+	var selectionEnd = TS.transcriptTextarea.selectionStart;
+	var first = TS.transcriptTextarea.value.slice(0, selectionStart);
+	var second = TS.transcriptTextarea.value.slice(selectionStart);
+	TS.transcriptTextarea.value = first + stamp + second;
 	// get the cursor back in position (after insertion of 10 characters)
-	transcriptTextarea.selectionStart = selectionStart + 10;
-	transcriptTextarea.selectionEnd = selectionEnd + 10;
+	TS.transcriptTextarea.selectionStart = selectionStart + 10;
+	TS.transcriptTextarea.selectionEnd = selectionEnd + 10;
+
+	// trigger
+	TS.onTextareaChange();
 };
 
-var onHelpClick = function (inEvent) {
+TS.onHelpClick = function (inEvent) {
 	// toggle info area
-	if (infoAreaOpen) {
-		infoArea.style.display = 'none';
-		helpButtonText.innerHTML = 'Help';
+	if (TS.infoAreaOpen) {
+		TS.infoArea.style.display = 'none';
+		TS.helpButtonText.innerHTML = 'Help';
 	} else {
-		infoArea.style.display = '';
-		helpButtonText.innerHTML = '<strong>X</strong> close';
+		TS.infoArea.style.display = '';
+		TS.helpButtonText.innerHTML = '<strong>X</strong> close';
 	}
-	infoAreaOpen = !infoAreaOpen;
+	TS.infoAreaOpen = !TS.infoAreaOpen;
 	inEvent.preventDefault();
 };
 
-var onStartClick = function (inEvent) {
-	onHelpClick(inEvent);
-	transcriptTextarea.focus();
+TS.onStartClick = function (inEvent) {
+	TS.onHelpClick(inEvent);
+	TS.transcriptTextarea.focus();
 };
 
-var saveText = function () {
-	if (localStorage) {
-		localStorage.setItem('transcript', transcriptTextarea.value);
-		var t = new Date(),
-			h = t.getHours(),
-			m = t.getMinutes();
-		 
-		if (h < 10)
-			h = '0' + h;
-		if (m < 10)
-			m = '0' + m;
-		storageFeedback.innerHTML = "autosave: last saved at " + h + ":" + m + ".";
+TS.saveText = function () {
+	if (TS.textChangedSinceSave) {
+		if (localStorage) {
+			localStorage.setItem('transcript', TS.transcriptTextarea.value);
+			var t = new Date(),
+				h = t.getHours(),
+				m = t.getMinutes();
+			 
+			if (h < 10)
+				h = '0' + h;
+			if (m < 10)
+				m = '0' + m;
+			TS.storageFeedback.innerHTML = "autosave: last saved at " + h + ":" + m + ".";
+
+			// reset dirty flag
+			TS.textChangedSinceSave = false;
+			TS.storageFeedback.classList.remove('timer-active');
+		}
+		else {
+			TS.storageFeedback.innerHTML = "<strong>warning:</strong> your text was not saved";
+		}
 	}
-	else {
-		storageFeedback.innerHTML = "<strong>warning:</strong> your text was not saved";
-	}
+
+	// restart long period autosave timer
+	// just reset short one, will start again on text input
+	clearTimeout(TS.storageTimerShort);
+	clearTimeout(TS.storageTimerLong);
+	TS.storageTimerLong = setTimeout(TS.saveText, 180000); // 3 minutes
 };
 
-var retrieveText = function () {
+TS.retrieveText = function () {
 	if (localStorage) {
 		var text = localStorage.getItem('transcript');
 		if (text && text.length > 0) {
-			transcriptTextarea.value = text;
-			storageFeedback.innerHTML = "text from previous session has been retrieved";
+			TS.transcriptTextarea.value = text;
+			TS.storageFeedback.innerHTML = "text from previous session has been retrieved";
 		} else {
-			storageFeedback.innerHTML = "ready with new session";
+			TS.storageFeedback.innerHTML = "ready with new session";
 		}
 	} else {
-		storageFeedback.innerHTML = "<strong>warning:</strong> no text could be retrieved";
+		TS.storageFeedback.innerHTML = "<strong>warning:</strong> no text could be retrieved";
 	}
 };
 
-var clearStorage = function () {
+TS.clearStorage = function () {
 	if (localStorage) {
 		localStorage.clear();
-		transcriptTextarea.value = "";
-		storageFeedback.innerHTML = "all data has been cleared";
+		TS.transcriptTextarea.value = "";
+		TS.storageFeedback.innerHTML = "all data has been cleared";
 	} else {
-		storageFeedback.innerHTML = "<strong>warning:</strong> data has not been cleared";
+		TS.storageFeedback.innerHTML = "<strong>warning:</strong> data has not been cleared";
 	}
+};
+
+/**
+ * Triggers a save action before the page is unloaded
+ * TODO needs work as action comes when elements/object are no longer available...
+ */
+TS.onPageHide = function (inEvent) {
+	//TS.saveText();
 };
 
 // --- Initialise --------------------------------------------------------------
@@ -314,6 +367,6 @@ var clearStorage = function () {
  * Wait for whole page to load before setting up.
  * Prevents problems with objects not loaded yet while trying to assign these.
  */
-addEvent(window, 'DOMContentLoaded', function () {
-	init();
+addEvent(window, 'pageshow', function () {
+	TS.init();
 });

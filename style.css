@@ -268,9 +268,15 @@ ol {
     justify-content: center;
 }
 .info-area > div {
-	padding: 60px 20px 20px;
+	padding: 80px 20px 20px;
 }
 
 button.start-button {
 	margin: 4em 0 2em;
+}
+
+.timer-active:before {
+	content: "• ";
+	font-weight: bold;
+	color: #966;
 }
