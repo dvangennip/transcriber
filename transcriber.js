@@ -44,7 +44,7 @@ TS.init = function () {
 	TS.sourceAudio = $('source_audio');
 	TS.sourceLabel = $('source_label');
 	TS.canPlay = false;
-	TS.allowedFileTypes = ['audio/mpeg','audio/ogg','audio/webm','audio/wave','audio/wav','audio/x-wav'],
+	TS.allowedFileTypes = ['audio/mpeg','video/ogg','audio/ogg','audio/webm','audio/wave','audio/wav','audio/x-wav'],
 	TS.storageTimerShort = null;
 	TS.storageTimerLong = null;
 	TS.textChangedSinceSave = false;
@@ -67,6 +67,7 @@ TS.init = function () {
 	addEvent(window, 'dragover',  TS.onSourceFileDrag);
     addEvent(window, 'dragenter', TS.onSourceFileDrag);
     addEvent(window, 'dragleave', TS.onSourceFileDrag);
+    addEvent(window, 'dragend',   TS.onSourceFileDrag);
 	addEvent(window, 'drop',      TS.onSourceFileDrop);
 
 	addEvent(window, 'keydown', TS.onWritingKeyDown);
@@ -78,13 +79,19 @@ TS.init = function () {
 	addEvent(TS.transcriptTextarea, 'blur',   TS.onTextareaBlur);
 
 	addEvent(TS.sourceAudio, 'canplay', TS.onAudioStateChange);
-	addEvent(TS.helpButton, 'click', TS.onHelpClick);
-	addEvent(TS.startButton, 'click', TS.onStartClick);
+	addEvent(TS.helpButton, 'click',    TS.onToggleInfoArea);
+	addEvent(TS.startButton, 'click',   TS.onToggleInfoArea);
 
 	addEvent(window, 'pagehide', TS.onPageHide);
 
 	// read last text from storage
 	TS.retrieveText();
+
+	// set info area state to saved state
+	if (TS.readCookie('infoAreaOpen') === 'false')
+		TS.onToggleInfoArea(null, false);
+	else
+		TS.onToggleInfoArea(null, true);
 };
 
 TS.onSpeedChange = function (inEvent) {
@@ -97,7 +104,7 @@ TS.onSpeedChange = function (inEvent) {
 
 TS.onSourceFileDrag = function (inEvent) {
 	// dragover, dragenter need to return false for a valid drop target element
-	if (inEvent.type === 'dragleave') {
+	if (inEvent.type === 'dragleave' || inEvent.type === 'dragend') {
 		TS.dropNotification.style.display = 'none';
 	} else {
 		TS.dropNotification.style.display = '';
@@ -106,7 +113,7 @@ TS.onSourceFileDrag = function (inEvent) {
 };
 
 TS.onSourceFileDrop = function (inEvent) {
-	var file = inEvent.dataTransfer.files[0];
+	var file = (inEvent && inEvent.dataTransfer) ? inEvent.dataTransfer.files[0] : undefined;
 
 	// set audio source if file is suitable
 	if (file && TS.allowedFileTypes.indexOf(file.type) !== -1) {
@@ -114,7 +121,7 @@ TS.onSourceFileDrop = function (inEvent) {
 		TS.sourceLabel.innerHTML = file.name;
 	} else {
 		var message = 'The file you dropped cannot be played. Try one of the following formats:\n\n';
-			message += allowedFileTypes.join('\n');
+			message += TS.allowedFileTypes.join('\n');
 
 		// alert is a blocking function which can lockup FF due to file system interaction
 		// giving the message via a timeout makes it async/indepent from the FileAPI/this callback.
@@ -281,22 +288,27 @@ TS.insertTimestamp = function () {
 	TS.onTextareaChange();
 };
 
-TS.onHelpClick = function (inEvent) {
+TS.onToggleInfoArea = function (inEvent, inState) {
 	// toggle info area
-	if (TS.infoAreaOpen) {
+	if (typeof inState !== 'undefined')
+		TS.infoAreaOpen = inState;
+	else
+		TS.infoAreaOpen = !TS.infoAreaOpen;
+
+	if (!TS.infoAreaOpen) {
 		TS.infoArea.style.display = 'none';
 		TS.helpButtonText.innerHTML = 'Help';
+		TS.transcriptTextarea.focus();
 	} else {
 		TS.infoArea.style.display = '';
 		TS.helpButtonText.innerHTML = '<strong>X</strong> close';
 	}
-	TS.infoAreaOpen = !TS.infoAreaOpen;
-	inEvent.preventDefault();
-};
 
-TS.onStartClick = function (inEvent) {
-	TS.onHelpClick(inEvent);
-	TS.transcriptTextarea.focus();
+	// also save state as cookie, so it is remembered for next time
+	TS.createCookie('infoAreaOpen', TS.infoAreaOpen.toString(), 3);
+
+	if (inEvent)
+		inEvent.preventDefault();
 };
 
 TS.saveText = function () {
@@ -343,10 +355,16 @@ TS.retrieveText = function () {
 	}
 };
 
+/**
+ * Clears data from localStorage and cookies
+ */
 TS.clearStorage = function () {
 	if (localStorage) {
 		localStorage.clear();
 		TS.transcriptTextarea.value = "";
+
+		TS.createCookie('infoAreaOpen', "", -1); // sets expiry data to past
+
 		TS.storageFeedback.innerHTML = "all data has been cleared";
 	} else {
 		TS.storageFeedback.innerHTML = "<strong>warning:</strong> data has not been cleared";
@@ -354,11 +372,43 @@ TS.clearStorage = function () {
 };
 
 /**
+ * Original found here: http://www.quirksmode.org/js/cookies.html
+ */
+TS.createCookie = function (name, value, days) {
+	var expires = "";
+	
+	if (days) {
+		var date = new Date();
+		date.setTime(date.getTime() + (days*24*60*60*1000));
+		expires = "; expires=" + date.toGMTString();
+	}
+
+	document.cookie = name + "=" + value + expires + "; path=/";
+};
+
+/**
+ * Original found here: http://www.quirksmode.org/js/cookies.html
+ */
+TS.readCookie = function (name) {
+	var nameEQ = name + "=",
+		ca = document.cookie.split(';');
+
+	for (var i = 0; i < ca.length; i++) {
+		var c = ca[i];
+		while (c.charAt(0) == ' ')
+			c = c.substring(1, c.length);
+		if (c.indexOf(nameEQ) === 0)
+			return c.substring(nameEQ.length, c.length);
+	}
+	return null;
+};
+
+/**
  * Triggers a save action before the page is unloaded
  * TODO needs work as action comes when elements/object are no longer available...
  */
 TS.onPageHide = function (inEvent) {
-	//TS.saveText();
+	TS.saveText();
 };
 
 // --- Initialise --------------------------------------------------------------
