@@ -44,6 +44,7 @@ TS.init = function () {
 	TS.sourceAudio = $('source_audio');
 	TS.sourceLabel = $('source_label');
 	TS.canPlay = false;
+	TS.timeAdjusted = false;
 	TS.allowedFileTypes = ['audio/mpeg','video/ogg','audio/ogg','audio/webm','audio/wave','audio/wav','audio/x-wav'],
 	TS.storageTimerShort = null;
 	TS.storageTimerLong = null;
@@ -227,17 +228,25 @@ TS.onAudioStateChange = function (inEvent) {
 TS.audioToggle = function () {
 	if (TS.canPlay) {
 		if (TS.sourceAudio.paused) {
+			// seek back 1 second in case of just a pause without other time adjustments
+			// improves the transcription of any word uttered mid-pause
+			if (!TS.timeAdjusted)
+				TS.sourceAudio.currentTime -= 1;
+
 			TS.sourceAudio.play();
 			TS.sourceAudio.playbackRate = TS.playbackRate;
 		} else {
 			TS.sourceAudio.pause();
 		}
+		TS.timeAdjusted = false; // reset
 	}
 };
 
 TS.audioSeek = function (inTime) {
-	if (TS.canPlay)
+	if (TS.canPlay) {
 		TS.sourceAudio.currentTime += inTime;
+		TS.timeAdjusted = true;
+	}
 };
 
 TS.audioPlaybackRate = function (inAdjustment) {
