@@ -1,6 +1,10 @@
-# Transcriber
+# [Transcriber](http://dvangennip.github.io/transcriber/)
 
-Transcriber is a webpage-as-text-processor that helps you to transcribe audio into text. The key benefit to using this tool is the integration of audio playback control, so you don't have to juggle two applications (audio player and word processor) at the same time while transcribing. This can be quite a timesaver and makes transcribing a little less elaborate.
+Transcriber is a webpage-as-text-processor that helps you to transcribe audio into text.
+
+[Try it here!](http://dvangennip.github.io/transcriber/)
+
+The key benefit to using this tool is the integration of audio playback control, so you don't have to juggle two applications (audio player and word processor) at the same time while transcribing. This can be quite a timesaver and makes transcribing a little less elaborate.
 
 After loading the webpage, it works as follows:
 
@@ -12,11 +16,13 @@ After loading the webpage, it works as follows:
 
 ## Saving data
 
-The webpage saves the contents of the textfield automatically while you're typing. Just above the textfield a little dot indicates whether changes have been made since the last save action.
+The webpage saves the contents of the textfield automatically while you're typing. Just above the textfield is a little dot that indicates whether changes have been made since the last save action.
 
 [![](autosave.png)](autosave.png)
 
-Data is only saved within the browser's storage. If you would clean up the browser or use a private window (which trashes all data on closing), you would loose the content. So while the saving mechanism works well to keep data save across browsing sessions and prevents against data loss due to a crash, it's not save for permanent storage.
+Data is only saved within the browser's own storage, not on any remote server. You may have heard of browser cookies stored on your computer. Well, this is something similar, but it can store much more data and no one else can access it. It's like your private cookie jar.
+
+However, if you would clean up the browser or use a private window (which trashes all data on closing), you would loose the content. So while the saving mechanism works well to keep data save across browsing sessions and prevents against data loss due to a crash, it's not save for permanent storage.
 
 No mechanism is implemented for exporting and saving data. Just select all content and copy it to your favourite text processor.
 
