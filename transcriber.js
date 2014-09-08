@@ -45,7 +45,17 @@ TS.init = function () {
 	TS.sourceLabel = $('source_label');
 	TS.canPlay = false;
 	TS.timeAdjusted = false;
-	TS.allowedFileTypes = ['audio/mpeg','video/ogg','audio/ogg','audio/webm','audio/wave','audio/wav','audio/x-wav'],
+	TS.allowedFileTypes = [
+		'audio/mpeg',
+		'audio/mp3',
+		'video/ogg',
+		'audio/ogg',
+		'audio/webm',
+		'audio/wave',
+		'audio/wav',
+		'audio/x-wav',
+		'audio/x-m4a'
+	],
 	TS.storageTimerShort = null;
 	TS.storageTimerLong = null;
 	TS.textChangedSinceSave = false;
@@ -115,6 +125,7 @@ TS.onSourceFileDrag = function (inEvent) {
 
 TS.onSourceFileDrop = function (inEvent) {
 	var file = (inEvent && inEvent.dataTransfer) ? inEvent.dataTransfer.files[0] : undefined;
+	//console.log(file);
 
 	// set audio source if file is suitable
 	if (file && TS.allowedFileTypes.indexOf(file.type) !== -1) {
