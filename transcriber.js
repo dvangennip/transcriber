@@ -380,7 +380,7 @@ TS.retrieveText = function () {
  */
 TS.clearStorage = function () {
 	if (localStorage) {
-		localStorage.clear();
+		localStorage.removeItem('transcript');
 		TS.transcriptTextarea.value = "";
 
 		TS.createCookie('infoAreaOpen', "", -1); // sets expiry data to past
