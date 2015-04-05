@@ -14,7 +14,7 @@
 	</div>
 	<div id="drop_notification" class="drop-notification"></div>
 	<div class="flex-container">
-		<div id="info_area" class="info-area">
+		<section id="info_area" class="info-area">
 			<div>
 				<h2><strong>Transcriber</strong> helps you to transcribe audio into text.</h2>
 				<ol>
@@ -24,7 +24,7 @@
 					<li>Insert a timestamp at cursor position by pressing 8 on the numeric keypad.</li>
 					<li>Text is automatically saved between sessions. Copy the text elsewhere for permanent storage.</li>
 				</ol>
-				<p>Additional information and source code is <a href="https://github.com/dvangennip/transcriber#transcriber">available on GitHub</a>.</p></br>
+				<p>Additional information and source code are <a href="https://github.com/dvangennip/transcriber#transcriber">available on GitHub</a>.</p></br>
 				<div class="flex-container">
 					<img src="keyboard-graphic.png" title="0 + 5: Play/pause.&#10;4 + 7: Rewind 5 or 10 seconds.&#10;6 + 9: Forward 5 or 10 seconds.&#10;1 + 2 + 3: Adjust playback speed.&#10;8: Insert timestamp at cursor position.">
 				</div>
@@ -32,18 +32,18 @@
 					<button id="info_start_button" class="start-button">Get started!</button>
 				</div>
 			</div>
-		</div>
-		<div id="source_drop_field" class="drop-area">
+		</section>
+		<section id="source_drop_field" class="drop-area">
 			<h3 id="source_label">No audio loaded. Drag an audio file over this area.</h3>
 			<audio id="source_audio" class="source-audio" controls autoplay="false"></audio>
 			<fieldset>
 				<label id="label_playback_speed" for="input_playback_speed">Speed (1.0x)</label>
 				<input id="input_playback_speed" name="input_playback_speed" type="range" value="1" min="0.5" max="2" step="0.1">
 			</fieldset>
-		</div>
-		<div class="writing-area flex-container">
+		</section>
+		<section class="writing-area flex-container">
 			<h6 id="storage_feedback">(loading)</h6>
 			<textarea id="transcript" placeholder="Type transcription here..."></textarea>
-		</div>
+		</section>
 	</div>
 </body>
