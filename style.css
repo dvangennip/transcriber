@@ -281,7 +281,25 @@ button.start-button {
 	margin: 4em 0 2em;
 }
 
-.timer-active::before {
+.progress-bar {
+	background: #444 none repeat scroll 0 0;
+	border-radius: 3px;
+	display: block;
+	height: 5px;
+	margin: 10px 0 5px;
+	padding: 1px;
+	transition: opacity 1s ease-in-out 0s;
+	width: 70%;
+}
+
+.progress-bar-inner {
+	background: #ccf none repeat scroll 0 0;
+	border-radius: 2px;
+	height: 5px;
+	width: 0;
+}
+
+.timer-active:before {
 	content: "• ";
 	font-weight: bold;
 	color: #966;

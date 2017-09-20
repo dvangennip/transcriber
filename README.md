@@ -10,7 +10,7 @@ After loading the webpage, it works as follows:
 
 1. Drag and drop an audio file onto this browser window.
 2. Start typing in the text area below.
-3. Use the keypad numbers to control playback without having to move your hands away from the keyboard.
+3. Use the keypad numbers to control playback without having to move your hands away from the keyboard. No numpad? Just use ctrl + the regular numbers on your keyboard.
 4. Insert a timestamp at cursor position by pressing 8 on the numeric keypad.
 5. Text is automatically saved between sessions. Copy the text elsewhere for permanent storage.
 
@@ -39,7 +39,7 @@ Use the numbers of the numpad to control playback.
 * 1 + 2 + 3: Adjust playback speed (-, reset, +).
 * 8: Insert timestamp at cursor position.
 
-Without a numpad available, such as on most laptops, this poses problems as no ordinary keys could be repurposed. This tool probably isn't too useful in combination with a numpad-less keyboard.
+Without a numpad available, such as on most laptops, you can use `ctrl` + the regular numbers on top.
 
 
 ## Accepted audio files
