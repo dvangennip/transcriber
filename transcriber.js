@@ -56,18 +56,18 @@ TS.init = function () {
 		'audio/x-wav',
 		'audio/x-m4a'
 	],
-	TS.storageTimerShort = null;
-	TS.storageTimerLong = null;
-	TS.textChangedSinceSave = false;
-	TS.transcriptTextarea = $('transcript');
+	TS.storageTimerShort           = null;
+	TS.storageTimerLong            = null;
+	TS.textChangedSinceSave        = false;
+	TS.transcriptTextarea          = $('transcript');
 	TS.transcriptTextarea.hasFocus = false;
-	TS.dropNotification = $('drop_notification');
-	TS.helpButton = $('help_button');
-	TS.helpButtonText = $('help_button_link');
-	TS.infoArea = $('info_area');
-	TS.infoAreaOpen = true;
-	TS.startButton = $('info_start_button');
-	TS.storageFeedback = $('storage_feedback');
+	TS.dropNotification            = $('drop_notification');
+	TS.helpButton                  = $('help_button');
+	TS.helpButtonText              = $('help_button_link');
+	TS.infoArea                    = $('info_area');
+	TS.infoAreaOpen                = true;
+	TS.startButton                 = $('info_start_button');
+	TS.storageFeedback             = $('storage_feedback');
 
 	// set styles
 	TS.dropNotification.style.display = 'none';
@@ -149,11 +149,17 @@ TS.onSourceFileDrop = function (inEvent) {
 };
 
 TS.onWritingKeyDown = function (inEvent) {
-	// variable is true is the key leads to text input
-	var insertTextKey = false;
+	// variable is true if the key leads to text input
+	var insertTextKey = false,
+		keyCode = inEvent.keyCode;
 
 	// check if audio control key combo
-	switch (inEvent.keyCode) {
+	// also allow for regular number keys if used in conjunction with ctrl or meta key (cmd or windows key)
+	if ((inEvent.ctrlKey || inEvent.metaKey) && keyCode >= 48 && keyCode <= 57) {
+		keyCode += 48; // this is the difference in keycodes between numpad and regular number row
+	}
+
+	switch (keyCode) {
 		case 96: // numpad 0
 		case 101: // numpad 5
 			TS.audioToggle();
@@ -281,8 +287,8 @@ TS.insertTimestamp = function () {
 		seconds,
 		stamp = '';
 	
-	hours = Math.floor(time / 3600);
-	time = time - 3600 * hours;
+	hours   = Math.floor(time / 3600);
+	time    = time - 3600 * hours;
 	minutes = Math.floor(time / 60);
 	seconds = Math.floor(time % 60);
 
